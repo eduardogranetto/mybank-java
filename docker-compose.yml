@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  my-bank-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/my_bank
+    ports:
+      - "8080:8080"
+  postgres:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: my_bank
+      POSTGRES_PASSWORD: my_bank
+      POSTGRES_DB: my_bank
+    ports:
+      - "5432:5432"

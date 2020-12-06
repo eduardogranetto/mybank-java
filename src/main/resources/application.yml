@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/my_bank
+    username: my_bank
+    password: my_bank
+
+flyway:
+  url: ${spring.datasource.url}
+  schemas: USERSERVICE
+  user: ${spring.datasource.username}
+  password: ${spring.datasource.password}
