@@ -1,5 +1,6 @@
 package com.pismo.mybankjava.service;
 
+import com.pismo.mybankjava.dto.AccountDTO;
 import com.pismo.mybankjava.dto.TransactionDTO;
 import com.pismo.mybankjava.entity.transaction.Transaction;
 import com.pismo.mybankjava.repository.TransactionRepository;
@@ -20,8 +21,10 @@ public class TransactionService {
 
   public TransactionDTO create(TransactionDTO transactionDTO) {
     BigDecimal calculatedAmount = transactionDTO.getOperationType().calculate(transactionDTO.getAmount());
+    AccountDTO accountDTO = accountService.get(transactionDTO.getAccountId());
+    accountService.updateAvailableCredit(accountDTO, calculatedAmount);
     Transaction transaction = Transaction.builder()
-      .accountId(accountService.get(transactionDTO.getAccountId()).getId())
+      .accountId(accountDTO.getId())
       .operationType(transactionDTO.getOperationType())
       .amount(calculatedAmount)
       .eventDate(OffsetDateTime.now())

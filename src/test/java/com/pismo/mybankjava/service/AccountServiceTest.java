@@ -2,6 +2,7 @@ package com.pismo.mybankjava.service;
 
 import com.pismo.mybankjava.dto.AccountDTO;
 import com.pismo.mybankjava.entity.Account;
+import com.pismo.mybankjava.exception.LimitExceededException;
 import com.pismo.mybankjava.exception.NotFoundException;
 import com.pismo.mybankjava.fixture.AccountFixture;
 import com.pismo.mybankjava.repository.AccountRepository;
@@ -11,13 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AccountServiceTest {
@@ -32,12 +33,12 @@ public class AccountServiceTest {
   private ArgumentCaptor<Account> accountCaptor;
 
   @Test
-  public void shouldCreateAccountWithSuccess(){
+  public void shouldCreateAccountWithSuccess() {
 
     AccountDTO toCreateDTO = AccountFixture.fixtureDTO().build();
     AccountDTO createdDTO = accountService.create(toCreateDTO);
 
-    verify(accountRepository, Mockito.times(1)).save(accountCaptor.capture());
+    verify(accountRepository, times(1)).save(accountCaptor.capture());
 
     Account createdAccount = accountCaptor.getValue();
 
@@ -51,7 +52,7 @@ public class AccountServiceTest {
   }
 
   @Test
-  public void shouldRetrieveAccountWithSuccess(){
+  public void shouldRetrieveAccountWithSuccess() {
     Account persistedAccount = AccountFixture.fixture().build();
     when(accountRepository.findById(persistedAccount.getId())).thenReturn(Optional.of(persistedAccount));
 
@@ -61,7 +62,7 @@ public class AccountServiceTest {
   }
 
   @Test
-  public void shouldReturnNotFoundIfAccountDoesNotExist(){
+  public void shouldReturnNotFoundIfAccountDoesNotExist() {
     UUID notFoundId = UUID.fromString("05f1277c-5255-40f3-96bb-743be5012216");
     when(accountRepository.findById(notFoundId)).thenReturn(Optional.empty());
 
@@ -69,6 +70,37 @@ public class AccountServiceTest {
 
     assertThat(e.getCode()).isEqualTo("ACCOUNT_NOT_FOUND");
     assertThat(e.getMessage()).isEqualTo("Account id=05f1277c-5255-40f3-96bb-743be5012216 not found");
+  }
+
+  @Test
+  public void shouldUpdateCreditLimitWithSuccess() {
+    BigDecimal amount = BigDecimal.valueOf(-500);
+    AccountDTO accountDTO = AccountFixture.fixtureDTO()
+      .availableCredit(BigDecimal.valueOf(1000))
+      .build();
+
+    accountService.updateAvailableCredit(accountDTO, amount);
+
+    verify(accountRepository, times(1)).updateAvailableCredit(accountDTO.getId(), amount);
+  }
+
+  @Test
+  public void shouldUpdateCreditLimitWithSuccessIfAccountLimitIsEqualToAmount() {
+    BigDecimal amount = BigDecimal.valueOf(-1000);
+    AccountDTO accountDTO = AccountFixture.fixtureDTO()
+      .availableCredit(BigDecimal.valueOf(1000))
+      .build();
+
+    accountService.updateAvailableCredit(accountDTO, amount);
+
+    verify(accountRepository, times(1)).updateAvailableCredit(accountDTO.getId(), amount);
+  }
+
+  @Test
+  public void shouldThrowLimitExceededExceptionIfThereIsNotLimit() {
+    BigDecimal amount = BigDecimal.valueOf(-500);
+    AccountDTO accountDTO = AccountFixture.fixtureDTO().build();
+    assertThrows(LimitExceededException.class, () -> accountService.updateAvailableCredit(accountDTO, amount));
   }
 
 }

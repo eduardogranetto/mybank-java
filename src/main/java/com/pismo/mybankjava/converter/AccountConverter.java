@@ -9,6 +9,7 @@ public class AccountConverter {
       return AccountDTO.builder()
         .id(account.getId())
         .documentNumber(account.getDocumentNumber())
+        .availableCredit(account.getAvailableCredit())
         .build();
     }
 

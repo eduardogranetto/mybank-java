@@ -1,5 +1,6 @@
 package com.pismo.mybankjava.service;
 
+import com.pismo.mybankjava.dto.AccountDTO;
 import com.pismo.mybankjava.dto.TransactionDTO;
 import com.pismo.mybankjava.entity.transaction.OperationType;
 import com.pismo.mybankjava.entity.transaction.Transaction;
@@ -44,11 +45,14 @@ public class TransactionServiceTest {
       .amount(amount)
       .build();
 
-    when(accountService.get(toCreateDTO.getAccountId())).thenReturn(AccountFixture.fixtureDTO().build());
+    AccountDTO accountDTO = AccountFixture.fixtureDTO().build();
+
+    when(accountService.get(toCreateDTO.getAccountId())).thenReturn(accountDTO);
 
     TransactionDTO createdDTO = transactionService.create(toCreateDTO);
 
     verify(transactionRepository, times(1)).save(transactionCaptor.capture());
+    verify(accountService, times(1)).updateAvailableCredit(accountDTO, expectedAmount);
 
     Transaction transactionCreated = transactionCaptor.getValue();
 
