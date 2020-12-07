@@ -24,6 +24,15 @@ public class RestExceptionHandler {
       .build();
   }
 
+  @ExceptionHandler(LimitExceededException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public Error limitExceeded(LimitExceededException e) {
+    return Error.builder()
+      .code(e.getCode())
+      .message(e.getMessage())
+      .build();
+  }
+
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public List<FieldError> validationExceptions(MethodArgumentNotValidException e) {

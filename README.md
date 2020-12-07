@@ -32,7 +32,7 @@ docker-compose up postgres
 ``
 java -jar build/libs/mybank-java-0.0.1-SNAPSHOT.jar
 ``
-
+w
 ## Apis
 
 ### Swagger
